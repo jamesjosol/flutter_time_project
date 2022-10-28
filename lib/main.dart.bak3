@@ -1,0 +1,518 @@
+import 'dart:async';
+import 'package:circular_countdown_timer/circular_countdown_timer.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:numberpicker/numberpicker.dart';
+import 'circular_timer.dart';
+import 'lap.dart';
+
+//
+// @author James Paul Josol BSIT - 3
+//
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Time",
+      theme: ThemeData.dark(),
+      home: Homepage(),
+    );
+  }
+}
+
+class Homepage extends StatefulWidget {
+  @override
+  _HomepageState createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> with TickerProviderStateMixin {
+
+  CountDownController _countController = CountDownController();
+  TabController tb;
+  int hour = 0;
+  int min = 0;
+  int sec = 0;
+  bool started = true;
+  bool stopped = true;
+  int timeForTimer = 0;
+  bool checkTimer = true;
+
+  @override
+  void initState() {
+    tb = TabController(length: 2, vsync: this);
+    super.initState();
+  }
+
+  void start() {
+    timeForTimer = ((hour * 60 * 60) + (min * 60) + sec);
+    setState(() {
+      started = false;
+      stopped = false;
+      _countController.restart(duration: timeForTimer);
+    });
+
+    Timer.periodic(Duration(
+      seconds: 1,
+    ), (Timer t) {
+      setState(() {
+        if(timeForTimer < 1 || checkTimer == false) {
+          t.cancel();
+          _countController.restart(duration: 0);
+          timeForTimer = 0;
+          checkTimer = true;
+          started = true;
+          stopped = true;
+          // Navigator.pushReplacement(context, MaterialPageRoute(
+          //   builder: (context) => Homepage(),
+          // ));
+        }
+        timeForTimer = timeForTimer - 1;
+      });
+    });
+  }
+
+  void stop() {
+    setState(() {
+      started = true;
+      stopped = true;
+      checkTimer = false;
+    });
+  }
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //************** Timer code here below! *****************
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Widget timer() {
+    return Container(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            flex: 4,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 10.0),
+                      child: Text(
+                        "HH",
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w700
+                        ),
+                      ),
+                    ),
+                    NumberPicker.integer(
+                      initialValue: hour,
+                      zeroPad: true,
+                      minValue: 0,
+                      maxValue: 23,
+                      listViewWidth: 60.0,
+                      selectedTextStyle: TextStyle(
+                        fontSize: 30.0,
+                        color: Colors.cyanAccent,
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          hour = val;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 28.0),
+                      child: Text(":", style: TextStyle(fontSize: 30.0),
+                      ),
+                    ),
+                  ],
+                ),
+
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 10.0),
+                      child: Text(
+                        "MM",
+                        style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.w700
+                        ),
+                      ),
+                    ),
+                    NumberPicker.integer(
+                      initialValue: min,
+                      zeroPad: true,
+                      minValue: 0,
+                      maxValue: 59,
+                      listViewWidth: 60.0,
+                      selectedTextStyle: TextStyle(
+                        fontSize: 30.0,
+                        color: Colors.cyanAccent,
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          min = val;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 28.0),
+                      child: Text(":", style: TextStyle(fontSize: 30.0),
+                      ),
+                    ),
+                  ],
+                ),
+
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 10.0),
+                      child: Text(
+                        "SS",
+                        style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.w700
+                        ),
+                      ),
+                    ),
+                    NumberPicker.integer(
+                      initialValue: sec,
+                      zeroPad: true,
+                      minValue: 0,
+                      maxValue: 59,
+                      listViewWidth: 60.0,
+                      selectedTextStyle: TextStyle(
+                        fontSize: 30.0,
+                        color: Colors.cyanAccent,
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          sec = val;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: CircularTimer(
+              context: context,
+              countController: _countController,
+              timeForTimer: timeForTimer
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                RaisedButton(
+                  onPressed: started ? start : null,
+                  padding: EdgeInsets.all(10),
+                  color: Colors.cyan,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.play_arrow,
+                        size: 35,
+                      ),
+                      Text(
+                        "Start",
+                        style: TextStyle(
+                          fontSize: 12.0,
+                          color: Colors.white
+                        ),
+                      ),
+                    ],
+                  ),
+                  shape: CircleBorder(),
+                ),
+                RaisedButton(
+                  onPressed: stopped ? null : stop,
+                  padding: EdgeInsets.all(10),
+                  color: Colors.red,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.stop,
+                        size: 35,
+                      ),
+                      Text(
+                        "Stop",
+                        style: TextStyle(
+                            fontSize: 12.0,
+                            color: Colors.white
+                        ),
+                      ),
+                    ],
+                  ),
+                  shape: CircleBorder(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //************* Stopwatch code here below! **************
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  bool startIsPressed = true;
+  bool stopIsPressed = true;
+  bool resetIsPressed = true;
+  String stopTimeDisplay = "00:00:00.00";
+  var swatch = Stopwatch();
+  final dur = const Duration(milliseconds: 40);
+
+  void startTimer() {
+    Timer(dur, keepRunning);
+  }
+
+  void keepRunning() {
+    if(swatch.isRunning) {
+      startTimer();
+    }
+    setState(() {
+      stopTimeDisplay = swatch.elapsed.inHours.toString().padLeft(2, "0") + ":"
+                      + (swatch.elapsed.inMinutes%60).toString().padLeft(2, "0") + ":"
+                      + (swatch.elapsed.inSeconds%60).toString().padLeft(2, "0") + "."
+                      + (swatch.elapsed.inMilliseconds%60).toString().padLeft(2, "0");
+    });
+  }
+
+  void startStopWatch() {
+    setState(() {
+      stopIsPressed = false;
+      startIsPressed = false;
+    });
+    swatch.start();
+    startTimer();
+  }
+
+  void stopStopWatch() {
+    setState(() {
+      stopIsPressed = true;
+      resetIsPressed = false;
+      startIsPressed = true;
+    });
+    swatch.stop();
+  }
+
+  void resetStopWatch() {
+    setState(() {
+      startIsPressed = true;
+      resetIsPressed = true;
+    });
+    swatch.reset();
+    stopTimeDisplay = "00:00:00.00";
+  }
+
+
+  List<Lap> laps = [
+
+  ];
+
+  bool isLapPressed = false;
+
+  Widget stopwatch() {
+    return Container(
+      child: Column(
+        children: <Widget>[
+          Expanded(
+            flex: isLapPressed ? 2 : 6,
+            child: Container(
+              alignment: Alignment.center,
+              child: RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: stopTimeDisplay.substring(0, stopTimeDisplay.length-2),
+                      style: TextStyle(
+                        fontSize: 50.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextSpan(
+                      text: stopTimeDisplay.substring(stopTimeDisplay.length-2),
+                      style: TextStyle(
+                        fontSize: 30.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: isLapPressed ? 4 : 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black38,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: laps.map((lap) => Text('${lap.mainTime} - ${lap.lapTime}')).toList(),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 4,
+            child: Container(
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      RaisedButton(
+                        onPressed: startIsPressed ? startStopWatch : stopStopWatch,
+                        color: Colors.green,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40.0,
+                          vertical: 15.0,
+                        ),
+                        child: Text(
+                          startIsPressed ? "Start" : "Pause",
+                          style: TextStyle(
+                            fontSize: 24.0,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      RaisedButton(
+                        onPressed: stopIsPressed ? null : stopStopWatch,
+                        color: Colors.red,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40.0,
+                          vertical: 15.0,
+                        ),
+                        child: Text(
+                          "Stop",
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      RaisedButton(
+                        onPressed: resetIsPressed ? null : resetStopWatch,
+                        color: Colors.teal,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 40.0,
+                          vertical: 15.0,
+                        ),
+                        child: Text(
+                          "Reset",
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Time Project"),
+        centerTitle: true,
+        bottom: TabBar(
+          tabs: <Widget>[
+            Column(
+              children: <Widget>[
+                Icon(
+                  Icons.timer,
+                ),
+                Text("Timer"),
+              ],
+            ),
+            Column(
+              children: <Widget>[
+                Icon(
+                  Icons.access_alarms_sharp,
+                ),
+                Text("Stopwatch"),
+              ],
+            ),
+          ],
+          labelPadding: EdgeInsets.only(bottom: 10.0),
+          labelStyle: TextStyle(
+            fontSize: 18.0
+          ),
+          unselectedLabelColor: Colors.white54,
+          controller: tb,
+        ),
+      ),
+      body: TabBarView(
+        children: <Widget>[
+          timer(),
+          stopwatch(),
+        ],
+        controller: tb,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          setState(() {
+            laps.add(
+              Lap(
+                mainTime: stopTimeDisplay,
+                lapTime: stopTimeDisplay
+              ),
+            );
+            isLapPressed = true;
+          });
+        },
+        backgroundColor: Colors.cyan,
+        child: Icon(Icons.flag, color: Colors.white,),
+      ),
+    );
+  }
+}
+
